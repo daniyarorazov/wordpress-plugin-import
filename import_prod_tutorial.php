@@ -63,19 +63,23 @@ function import_products_page_callback()
 
         foreach ($products as $product) {
             $new_product = array(
-                'post_title' => $product['name'],
-                'post_content' => $product['description'],
-                'post_status' => 'publish',
-                'post_type' => 'product',
+                'sku'    => $product['regNum'],
+                'post_title'    => $product['title'],
+                'post_content'  => implode(',', $product),
+                'post_status'   => 'publish',
+                'post_type'     => 'product',
+                'sale_price'    => $product['priceWS'],
+                'virtual'       => 'yes'
             );
             $product_id = wp_insert_post($new_product);
 
-            update_post_meta($product_id, '_regular_price', $product['regular_price']);
-            update_post_meta($product_id, '_manage_stock', $product['manage_stock']);
-            update_post_meta($product_id, '_stock', $product['stock']);
-            update_post_meta($product_id, '_weight', $product['weight']);
-            update_post_meta($product_id, '_product_type', $product['type']);
-            update_post_meta($product_id, '_has_variations', $product['has_variations']);
+            update_post_meta($product_id, '_SKU', $product['regNum']);
+            update_post_meta($product_id, '_regular_price', $product['priceWS']);
+            update_post_meta($product_id, '_manage_stock', $product['retailPriceExclVAT']);
+            update_post_meta($product_id, '_stock', $product['glass']);
+            update_post_meta($product_id, '_weight', $product['volume']);
+            update_post_meta($product_id, '_product_type', $product['appeals']);
+            update_post_meta($product_id, '_has_variations', $product['vintage']);
         }
 
         echo '<div>Products imported successfully!</div>';
