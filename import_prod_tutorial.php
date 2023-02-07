@@ -42,6 +42,18 @@ function add_import_products_page() {
         'import_products_page_callback'
     );
 }
+
+function getElemsTrueOption($product_option_obj) {
+    $list = [];
+    $array = (array) $product_option_obj;
+    foreach ($array as $key => $value) {
+        if ($value === true) {
+            array_push($list, $key);
+        }
+    }
+    return implode(', ', $list);
+}
+
 function import_products_page_callback()
 {
     echo '<div class="wrap">';
@@ -58,56 +70,19 @@ function import_products_page_callback()
     echo '</div>';
 
     if (isset($_POST['submit_add_test'])) {
-        $table_data = array(
-            array(
-                'Name' => 'Product 1',
-                'SKU' => 'P1-SKU',
-                'Stock' => 10,
-                'Price' => 15.99,
-                'Categories' => 'Category 1, Category 2',
-                'Tags' => 'Tag 1, Tag 2',
-                'Featured' => true,
-                'Date' => '2023-02-06',
-                'Custom Field 1' => 'Value 1',
-                'Custom Field 2' => 'Value 2',
-                'Custom Field 3' => 'Value 3',
-                'Custom Field 4' => 'Value 4'
-            ),
-            array(
-                'Name' => 'Product 2',
-                'SKU' => 'P2-SKU',
-                'Stock' => 5,
-                'Price' => 20.99,
-                'Categories' => 'Category 2, Category 3',
-                'Tags' => 'Tag 2, Tag 3',
-                'Featured' => false,
-                'Date' => '2023-02-07',
-                'Custom Field 1' => 'Value 5',
-                'Custom Field 2' => 'Value 6',
-                'Custom Field 3' => 'Value 7',
-                'Custom Field 4' => 'Value 8'
+        $product_id = 123;
+        $json_data = array(
+            'post_title' => 'Product 1',
+            'rangeOfGoods' => 4,
+            'regNum' => '9990000025083',
+            'variety' => array(
+                'barbera' => false,
+                'cabernetFranc' => false,
+                'cabernetSauvignon' => false,
             )
         );
 
-        foreach ($table_data as $product) {
-            $post_id = wp_insert_post(array(
-                'post_title' => $product['Name'],
-                'post_status' => 'publish',
-                'post_type' => 'product',
-                'post_date' => $product['Date']
-            ));
-
-            wp_set_object_terms($post_id, explode(',', $product['Categories']), 'product_cat');
-            wp_set_object_terms($post_id, explode(',', $product['Tags']), 'product_tag');
-            update_post_meta($post_id, '_sku', $product['SKU']);
-            update_post_meta($post_id, '_stock', $product['Stock']);
-            update_post_meta($post_id, '_regular_price', $product['Price']);
-            update_post_meta($post_id, '_featured', $product['Featured']);
-            update_post_meta($post_id, 'Custom Field 1', $product['Custom Field 1']);
-            update_post_meta($post_id, 'Custom Field 2', $product['Custom Field 2']);
-            update_post_meta($post_id, 'Custom Field 3', $product['Custom Field 3']);
-            update_post_meta($post_id, 'Custom Field 4', $product['Custom Field 4']);
-        }
+        update_post_meta($product_id, '_product_details', $json_data);
     }
     if (isset($_POST['submit_file'])) {
         $file_path = $_FILES['import_file']['tmp_name'];
@@ -121,6 +96,13 @@ function import_products_page_callback()
                 'post_type'     => 'product',
                 'sale_price'    => $product['priceWS'],
             );
+
+
+
+
+
+
+
             $product_id = wp_insert_post($new_product);
 
             wp_set_object_terms($product_id, explode(',', $product['rangeOfGoods']), 'product_cat');
@@ -133,15 +115,17 @@ function import_products_page_callback()
             update_post_meta($product_id, 'Ročník', $product['vintage']);
             update_post_meta($product_id, 'Apelace', $product['appeals']);
             update_post_meta($product_id, 'Dekantace', $product['decantation']);
-//            update_post_meta($product_id, 'Odrůda', $product['variety']);
-//            update_post_meta($product_id, 'Styl', $product['style']);
+            update_post_meta($product_id, 'Odrůda', getElemsTrueOption($product['variety']));
+            update_post_meta($product_id, 'Styl', getElemsTrueOption($product['style']));
             update_post_meta($product_id, 'Sklenička', $product['glass']);
+            update_post_meta($product_id, '_regular_price', $product['priceWS']);
             update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
             update_post_meta($product_id, 'Základní cena bez DPH', $product['retailPriceExclVAT']);
             update_post_meta($product_id, 'Akční cena včetně DPH', $product['eshopPriceVAT']);
         }
 
         echo '<div>Products imported successfully!</div>';
+
     }
 
     if (isset($_POST['submit_link'])) {
@@ -169,9 +153,10 @@ function import_products_page_callback()
                 update_post_meta($product_id, 'Ročník', $product['vintage']);
                 update_post_meta($product_id, 'Apelace', $product['appeals']);
                 update_post_meta($product_id, 'Dekantace', $product['decantation']);
-//            update_post_meta($product_id, 'Odrůda', $product['variety']);
-//            update_post_meta($product_id, 'Styl', $product['style']);
+                update_post_meta($product_id, 'Odrůda', getElemsTrueOption($product['variety']));
+                update_post_meta($product_id, 'Styl', getElemsTrueOption($product['style']));
                 update_post_meta($product_id, 'Sklenička', $product['glass']);
+                update_post_meta($product_id, '_regular_price', $product['priceWS']);
                 update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
                 update_post_meta($product_id, 'Základní cena bez DPH', $product['retailPriceExclVAT']);
                 update_post_meta($product_id, 'Akční cena včetně DPH', $product['eshopPriceVAT']);
