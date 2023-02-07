@@ -3,6 +3,7 @@
 ## First
 * Download Woocommerce to wordpress
 * For plugin require to create WOOCOMMERCE REST API in Wordpress admin panel. After copy all credentials and paste to php code
+* Plugin folder and plugin name must be the same!!!
 
 ## Second
 * My plugin page will be located in the page Products -> Import products!
