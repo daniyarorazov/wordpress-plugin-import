@@ -3,6 +3,17 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+    <style>
+        .table-form {
+            border-collapse:separate;
+            border-spacing: 0 1em;
+        }
+
+        .table-form tr td{
+            background: #dfdfdf;
+            padding: 20px 10px 20px 10px;
+        }
+    </style>
 </head>
 </html>
 
@@ -25,7 +36,6 @@ if ( is_readable( $autoloader ) ) {
 }
 
 use Automattic\WooCommerce\Client;
-use Automattic\WooCommerce\HttpClient\HttpClientException;
 
 $woocommerce = new Client(
     'https://wordpress',
@@ -78,13 +88,11 @@ function import_products_page_callback()
     echo '<div class="wrap">';
     echo '<h1>Import Products</h1>';
     echo '<form action="' . esc_url($_SERVER['REQUEST_URI']) . '" method="post" enctype="multipart/form-data">';
-    echo '<table>';
-    echo '<tr><td>JSON File:</td><td><input type="file" name="import_file" /></td></tr>';
-    echo '<tr><td>REST API Link:</td><td><input type="text" name="import_link" /></td></tr>';
+    echo '<table class="table-form">';
+    echo '<tr><td><b>JSON File:</b></td><td><input  type="file" name="import_file" /></td><td><input class="btn btn-primary" type="submit" name="submit_file" value="Import Products with JSON" /></td></tr>';
+    echo '<tr><td><b>REST API Link:</b></td><td><input type="text" name="import_link" /></td><td><input class="btn btn-primary" type="submit" name="submit_link" value="Import REST API" /></td></tr>';
+    echo '<tr><td><b>Or empty custom product:</b></td><td></td><td><input class="btn btn-primary" type="submit" name="submit_empty_product" value="Create empty product with custom fields of Wine" /></td></tr>';
     echo '</table>';
-    echo '<input type="submit" name="submit_file" value="Import Products" />';
-    echo '<input type="submit" name="submit_link" value="Import REST API" />';
-    echo '<input type="submit" name="submit_add_test" value="Import custom" />';
     echo '</form>';
     echo '</div>';
 
