@@ -19,17 +19,17 @@
 
 <?php
 
+// Options for naming plugin
 /*
-Plugin Name: Import Products Tutorial
+Plugin Name: Import Products (Wines)
 Description: A plugin for importing products into WooCommerce
 Version: 1.0
 Author: Daniyar
-Text Domain: import-products-tutor
+Text Domain: import-products-wines
 */
 
 
 // Load Composer autoloader.
-// @link https://github.com/brightnucleus/jasper-client/blob/master/tests/bootstrap.php#L55-L59
 $autoloader = dirname( __FILE__ ) . '/vendor/autoload.php';
 if ( is_readable( $autoloader ) ) {
     require_once $autoloader;
@@ -37,6 +37,7 @@ if ( is_readable( $autoloader ) ) {
 
 use Automattic\WooCommerce\Client;
 
+// Connect to REST API WOOCOMMERCE (Change this fields depends yours project)
 $woocommerce = new Client(
     'https://wordpress',
     'ck_a651750ebea3f32a4a141f4f361825ca67367578',
@@ -50,6 +51,7 @@ $woocommerce = new Client(
 
 add_action( 'admin_menu', 'add_import_products_page' );
 
+// Create import products page inside Woocommerce products
 function add_import_products_page() {
     add_submenu_page(
         'edit.php?post_type=product',
@@ -61,17 +63,20 @@ function add_import_products_page() {
     );
 }
 
+
+// Getting SKU of products from products list
 function get_product_by_sku( $sku ) {
-
     global $wpdb;
-
     $product_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key='_sku' AND meta_value='%s' LIMIT 1", $sku ) );
-
     if ( $product_id ) return new WC_Product( $product_id );
 
     return null;
 }
 
+
+
+// Get elems with inside options in obj and create from obj to string like ("elem1, elem2, elem3")
+// In our situation, we are using for property style and variety in the data.json model
 function getElemsTrueOption($product_option_obj) {
     $list = [];
     $array = (array) $product_option_obj;
@@ -83,10 +88,13 @@ function getElemsTrueOption($product_option_obj) {
     return implode(', ', $list);
 }
 
+
+
+// Plugin page
 function import_products_page_callback()
 {
     echo '<div class="wrap">';
-    echo '<h1>Import Products</h1>';
+    echo '<h1>Import Products (Wines)</h1>';
     echo '<form action="' . esc_url($_SERVER['REQUEST_URI']) . '" method="post" enctype="multipart/form-data">';
     echo '<table class="table-form">';
     echo '<tr><td><b>JSON File:</b></td><td><input  type="file" name="import_file" /></td><td><input class="btn btn-primary" type="submit" name="submit_file" value="Import Products with JSON" /></td></tr>';
@@ -96,65 +104,88 @@ function import_products_page_callback()
     echo '</form>';
     echo '</div>';
 
-    if (isset($_POST['submit_add_test'])) {
-        $product_id = 123;
-        $json_data = array(
-            'post_title' => 'Product 1',
-            'rangeOfGoods' => 4,
-            'regNum' => '9990000025083',
-            'variety' => array(
-                'barbera' => false,
-                'cabernetFranc' => false,
-                'cabernetSauvignon' => false,
-            )
-        );
-
-        update_post_meta($product_id, '_product_details', $json_data);
-    }
+    // If we want to put our json data for importing products
     if (isset($_POST['submit_file'])) {
         $file_path = $_FILES['import_file']['tmp_name'];
         $file_data = file_get_contents($file_path);
         $products = json_decode($file_data, true);
 
         foreach ($products as $product) {
-            $new_product = array(
-                'post_title'    => $product['title'],
-                'post_status'   => 'publish',
-                'post_type'     => 'product',
-                'sale_price'    => $product['priceWS'],
-            );
 
+            $product_sku = $product['regNum'];
 
+            // Check if a product with this SKU already exists
+            $existing_product_id = get_product_by_sku( $product_sku );
+            if ( $existing_product_id ) {
+                $product_id = $existing_product_id->id;
+                wp_update_post(array(
+                    'ID' => $product_id,
+                    'post_title' => $product['title'],
+                    'post_status' => 'publish',
+                    'post_type' => 'product',
+                    'sale_price' => $product['priceWS'],
+                ));
 
+                // All properties of Product
+                wp_set_object_terms($product_id, explode(',', $product['rangeOfGoods']), 'product_cat');
+                update_post_meta($product_id, '_sku', $product['regNum']);
+                update_post_meta($product_id, 'Kategorie', $product['rangeOfGoods']);
+                update_post_meta($product_id, 'Země', $product['country']);
+                update_post_meta($product_id, 'Vinařství', $product['winery']);
+                update_post_meta($product_id, 'Oblast', $product['area']);
+                update_post_meta($product_id, 'Objem', $product['volume']);
+                update_post_meta($product_id, 'Ročník', $product['vintage']);
+                update_post_meta($product_id, 'Apelace', $product['appeals']);
+                update_post_meta($product_id, 'Dekantace', $product['decantation']);
+                update_post_meta($product_id, 'Odrůda', getElemsTrueOption($product['variety']));
+                update_post_meta($product_id, 'Styl', getElemsTrueOption($product['style']));
+                update_post_meta($product_id, 'Sklenička', $product['glass']);
+                update_post_meta($product_id, '_price', $product['priceWS']);
+                update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
+                update_post_meta($product_id, 'Základní cena bez DPH', $product['retailPriceExclVAT']);
+                update_post_meta($product_id, '_regular_price', $product['retailPriceExclVAT']);
+                update_post_meta($product_id, 'Akční cena včetně DPH', $product['eshopPriceVAT']);
+                update_post_meta($product_id, '_sale_price', $product['eshopPriceVAT']);
 
+                echo '<div class="alert alert-success" role="alert">Updated info product: '.$product['title'].'</div>';
+            } else {
+                // Create a new product
+                $new_product = array(
+                    'post_title'    => $product['title'],
+                    'post_status'   => 'publish',
+                    'post_type'     => 'product',
+                    'sale_price'    => $product['priceWS'],
+                );
 
+                $product_id = wp_insert_post($new_product);
 
-
-            $product_id = wp_insert_post($new_product);
-
-            wp_set_object_terms($product_id, explode(',', $product['rangeOfGoods']), 'product_cat');
-            update_post_meta($product_id, '_sku', $product['regNum']);
-            update_post_meta($product_id, 'Kategorie', $product['rangeOfGoods']);
-            update_post_meta($product_id, 'Země', $product['country']);
-            update_post_meta($product_id, 'Vinařství', $product['winery']);
-            update_post_meta($product_id, 'Oblast', $product['area']);
-            update_post_meta($product_id, 'Objem', $product['volume']);
-            update_post_meta($product_id, 'Ročník', $product['vintage']);
-            update_post_meta($product_id, 'Apelace', $product['appeals']);
-            update_post_meta($product_id, 'Dekantace', $product['decantation']);
-            update_post_meta($product_id, 'Odrůda', getElemsTrueOption($product['variety']));
-            update_post_meta($product_id, 'Styl', getElemsTrueOption($product['style']));
-            update_post_meta($product_id, 'Sklenička', $product['glass']);
-            update_post_meta($product_id, '_regular_price', $product['priceWS']);
-            update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
-            update_post_meta($product_id, 'Základní cena bez DPH', $product['retailPriceExclVAT']);
-            update_post_meta($product_id, 'Akční cena včetně DPH', $product['eshopPriceVAT']);
+                // All properties of Product
+                wp_set_object_terms($product_id, explode(',', $product['rangeOfGoods']), 'product_cat');
+                update_post_meta($product_id, '_sku', $product['regNum']);
+                update_post_meta($product_id, 'Kategorie', $product['rangeOfGoods']);
+                update_post_meta($product_id, 'Země', $product['country']);
+                update_post_meta($product_id, 'Vinařství', $product['winery']);
+                update_post_meta($product_id, 'Oblast', $product['area']);
+                update_post_meta($product_id, 'Objem', $product['volume']);
+                update_post_meta($product_id, 'Ročník', $product['vintage']);
+                update_post_meta($product_id, 'Apelace', $product['appeals']);
+                update_post_meta($product_id, 'Dekantace', $product['decantation']);
+                update_post_meta($product_id, 'Odrůda', getElemsTrueOption($product['variety']));
+                update_post_meta($product_id, 'Styl', getElemsTrueOption($product['style']));
+                update_post_meta($product_id, 'Sklenička', $product['glass']);
+                update_post_meta($product_id, '_price', $product['priceWS']);
+                update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
+                update_post_meta($product_id, 'Základní cena bez DPH', $product['retailPriceExclVAT']);
+                update_post_meta($product_id, '_regular_price', $product['retailPriceExclVAT']);
+                update_post_meta($product_id, 'Akční cena včetně DPH', $product['eshopPriceVAT']);
+                update_post_meta($product_id, '_sale_price', $product['eshopPriceVAT']);
+                echo '<div class="alert alert-success" role="alert">Product imported successfully: '. $product['title'] .'</div>';
+            }
         }
-
-        echo '<div>Products imported successfully!</div>';
-
     }
 
+
+    // If we want to put data from API for importing products
     if (isset($_POST['submit_link'])) {
         $import_link = $_POST['import_link'];
         $response = wp_remote_get($import_link);
@@ -167,6 +198,8 @@ function import_products_page_callback()
 
                 // Check if a product with this SKU already exists
                 $existing_product_id = get_product_by_sku( $product_sku );
+
+                // If product existing, we update info
                 if ( $existing_product_id ) {
                     $product_id = $existing_product_id->id;
                     wp_update_post(array(
@@ -178,7 +211,7 @@ function import_products_page_callback()
                     ));
 
 
-
+                    // Update properties of product
                     wp_set_object_terms($product_id, explode(',', $product['rangeOfGoods']), 'product_cat');
                     update_post_meta($product_id, '_sku', $product['regNum']);
                     update_post_meta($product_id, 'Kategorie', $product['rangeOfGoods']);
@@ -192,12 +225,14 @@ function import_products_page_callback()
                     update_post_meta($product_id, 'Odrůda', getElemsTrueOption($product['variety']));
                     update_post_meta($product_id, 'Styl', getElemsTrueOption($product['style']));
                     update_post_meta($product_id, 'Sklenička', $product['glass']);
-                    update_post_meta($product_id, '_regular_price', $product['priceWS']);
+                    update_post_meta($product_id, '_price', $product['priceWS']);
                     update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
                     update_post_meta($product_id, 'Základní cena bez DPH', $product['retailPriceExclVAT']);
+                    update_post_meta($product_id, '_regular_price', $product['retailPriceExclVAT']);
                     update_post_meta($product_id, 'Akční cena včetně DPH', $product['eshopPriceVAT']);
+                    update_post_meta($product_id, '_sale_price', $product['eshopPriceVAT']);
 
-                    echo '<div class="alert alert-success" role="alert">Updated info product</div>';
+                    echo '<div class="alert alert-success" role="alert">Updated info product: '.$product['title'].'</div>';
                 } else {
                     // Create a new product
                     $new_product = array(
@@ -209,6 +244,7 @@ function import_products_page_callback()
 
                     $product_id = wp_insert_post($new_product);
 
+                    // All properties of Product
                     wp_set_object_terms($product_id, explode(',', $product['rangeOfGoods']), 'product_cat');
                     update_post_meta($product_id, '_sku', $product['regNum']);
                     update_post_meta($product_id, 'Kategorie', $product['rangeOfGoods']);
@@ -222,16 +258,41 @@ function import_products_page_callback()
                     update_post_meta($product_id, 'Odrůda', getElemsTrueOption($product['variety']));
                     update_post_meta($product_id, 'Styl', getElemsTrueOption($product['style']));
                     update_post_meta($product_id, 'Sklenička', $product['glass']);
-                    update_post_meta($product_id, '_regular_price', $product['priceWS']);
+                    update_post_meta($product_id, '_price', $product['priceWS']);
                     update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
                     update_post_meta($product_id, 'Základní cena bez DPH', $product['retailPriceExclVAT']);
+                    update_post_meta($product_id, '_regular_price', $product['retailPriceExclVAT']);
                     update_post_meta($product_id, 'Akční cena včetně DPH', $product['eshopPriceVAT']);
-                    echo '<div class="alert alert-success" role="alert">Products imported successfully!</div>';
+                    update_post_meta($product_id, '_sale_price', $product['eshopPriceVAT']);
+                    echo '<div class="alert alert-success" role="alert">Product imported successfully: '. $product['title'] .'</div>';
                 }
-
-
             }
-
         }
+    }
+    // Create new empty product
+    if (isset($_POST['submit_empty_product'])) {
+        $regNum = mt_rand(1000000000000, 9999999999999);
+
+        $existing_product_id = get_product_by_sku( $regNum );
+
+        while ($existing_product_id) {
+            $regNum = mt_rand(1000000000000, 9999999999999);
+            $existing_product_id = get_product_by_sku( $regNum );
+        }
+
+        $json_data = array(
+            'post_title' => 'New Empty Product',
+            'rangeOfGoods' => 4,
+            'post_status'   => 'publish',
+            'post_type'     => 'product',
+            'regNum' => $regNum,
+        );
+
+        $product_id = wp_insert_post($json_data);
+
+        wp_set_object_terms($product_id, explode(',', $json_data['rangeOfGoods']), 'product_cat');
+        update_post_meta($product_id, '_sku', $json_data['regNum']);
+        update_post_meta($product_id, '_product_details', $json_data);
+        echo '<div class="alert alert-success" role="alert">New product has been created!</div>';
     }
 }
