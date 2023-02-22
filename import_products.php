@@ -126,6 +126,7 @@ function import_products_page_callback()
                     'sale_price' => $product['priceWS'],
                 ));
 
+
                 // All properties of Product
                 wp_set_object_terms($product_id, explode(',', $product['rangeOfGoods']), 'product_cat');
                 update_post_meta($product_id, '_sku', $product['regNum']);
@@ -142,9 +143,7 @@ function import_products_page_callback()
                 update_post_meta($product_id, 'Sklenička', $product['glass']);
                 update_post_meta($product_id, '_price', $product['priceWS']);
                 update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
-                update_post_meta($product_id, 'Základní cena bez DPH', $product['retailPriceExclVAT']);
-                update_post_meta($product_id, '_regular_price', $product['retailPriceExclVAT']);
-                update_post_meta($product_id, 'Akční cena včetně DPH', $product['eshopPriceVAT']);
+                update_post_meta($product_id, '_regular_price', doubleval($product['retailPriceExclVAT']) * 1.21);
                 update_post_meta($product_id, '_sale_price', $product['eshopPriceVAT']);
 
                 echo '<div class="alert alert-success" role="alert">Updated info product: '.$product['title'].'</div>';
@@ -175,9 +174,7 @@ function import_products_page_callback()
                 update_post_meta($product_id, 'Sklenička', $product['glass']);
                 update_post_meta($product_id, '_price', $product['priceWS']);
                 update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
-                update_post_meta($product_id, 'Základní cena bez DPH', $product['retailPriceExclVAT']);
-                update_post_meta($product_id, '_regular_price', $product['retailPriceExclVAT']);
-                update_post_meta($product_id, 'Akční cena včetně DPH', $product['eshopPriceVAT']);
+                update_post_meta($product_id, '_regular_price', doubleval($product['retailPriceExclVAT']) * 1.21);
                 update_post_meta($product_id, '_sale_price', $product['eshopPriceVAT']);
                 echo '<div class="alert alert-success" role="alert">Product imported successfully: '. $product['title'] .'</div>';
             }
@@ -227,9 +224,7 @@ function import_products_page_callback()
                     update_post_meta($product_id, 'Sklenička', $product['glass']);
                     update_post_meta($product_id, '_price', $product['priceWS']);
                     update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
-                    update_post_meta($product_id, 'Základní cena bez DPH', $product['retailPriceExclVAT']);
-                    update_post_meta($product_id, '_regular_price', $product['retailPriceExclVAT']);
-                    update_post_meta($product_id, 'Akční cena včetně DPH', $product['eshopPriceVAT']);
+                    update_post_meta($product_id, '_regular_price', doubleval($product['retailPriceExclVAT']) * 1.21);
                     update_post_meta($product_id, '_sale_price', $product['eshopPriceVAT']);
 
                     echo '<div class="alert alert-success" role="alert">Updated info product: '.$product['title'].'</div>';
@@ -260,9 +255,7 @@ function import_products_page_callback()
                     update_post_meta($product_id, 'Sklenička', $product['glass']);
                     update_post_meta($product_id, '_price', $product['priceWS']);
                     update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
-                    update_post_meta($product_id, 'Základní cena bez DPH', $product['retailPriceExclVAT']);
-                    update_post_meta($product_id, '_regular_price', $product['retailPriceExclVAT']);
-                    update_post_meta($product_id, 'Akční cena včetně DPH', $product['eshopPriceVAT']);
+                    update_post_meta($product_id, '_regular_price', doubleval($product['retailPriceExclVAT']) * 1.21);
                     update_post_meta($product_id, '_sale_price', $product['eshopPriceVAT']);
                     echo '<div class="alert alert-success" role="alert">Product imported successfully: '. $product['title'] .'</div>';
                 }
