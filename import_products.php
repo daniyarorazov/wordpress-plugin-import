@@ -116,7 +116,13 @@ function import_products_page_callback()
             $product_sku = $product['regNum'];
 
             // Check if a product with this SKU already exists
-            $existing_product_id = get_product_by_sku( $product_sku );
+            // get_product_by_sku()
+            // Error with this 2 code line
+            // Method doesn't define my sku product
+            $existing_product_id = wc_get_product_id_by_sku('9990000025083');
+            echo $existing_product_id;
+            // end error
+
             if ( $existing_product_id ) {
                 $product_id = $existing_product_id->id;
                 wp_update_post(array(
@@ -127,6 +133,41 @@ function import_products_page_callback()
                     'sale_price' => $product['priceWS'],
                 ));
 
+
+                // Images properties
+                $regnum = intval($product['regNum']);
+                $url = "https://portal.facecounter.eu/pwc_api/api/v1/Stocks/Imports/Image/$regnum";
+                $headers = array(
+                    'APIKey: 1B63ED8F-A419-441D-B468-01112A917CD3'
+                );
+
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+                $response = curl_exec($ch);
+                curl_close($ch);
+
+                // Save the image data to a file
+                $filename = 'image_'.$product['regNum'].'.jpg';
+                $file_path = WP_CONTENT_DIR . '/uploads/' . $filename; // Replace with the desired file path
+                $file = fopen($file_path, 'w');
+                fwrite($file, $response);
+                fclose($file);
+                if (!get_post_thumbnail_id($product_id)) {
+                    // Attach the image to the product
+                    $attachment_id = wp_insert_attachment(array(
+                        'post_title' => $filename,
+                        'post_content' => '',
+                        'post_status' => 'inherit',
+                        'post_mime_type' => 'image/jpeg' // Replace with the actual MIME type of the image
+                    ), $file_path);
+
+                    if (!is_wp_error($attachment_id)) {
+                        set_post_thumbnail($existing_product_id->id, $attachment_id);
+                    }
+                }
 
                 // All properties of Product
                 wp_set_object_terms($product_id, explode(',', $product['rangeOfGoods']), 'product_cat');
@@ -156,8 +197,13 @@ function import_products_page_callback()
                 update_post_meta($product_id, 'Sklenička', $product['glass']);
                 update_post_meta($product_id, '_price', $product['priceWS']);
                 update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
-                update_post_meta($product_id, '_regular_price', doubleval($product['retailPriceExclVAT']) * 1.21);
-                update_post_meta($product_id, '_sale_price', $product['eshopPriceVAT']);
+                if ($product['retailPriceExclVAT'] and $product['eshopPriceVAT'] < doubleval($product['retailPriceExclVAT']) * 1.21) {
+                    update_post_meta($product_id, '_regular_price', doubleval($product['retailPriceExclVAT']) * 1.21);
+                    update_post_meta($product_id, '_sale_price', $product['eshopPriceVAT']);
+                } else {
+                    update_post_meta($product_id, '_regular_price', doubleval($product['eshopPriceVAT']));
+                }
+
 
                 echo '<div class="alert alert-success" role="alert">Updated info product: '.$product['title'].'</div>';
             } else {
@@ -170,6 +216,41 @@ function import_products_page_callback()
                 );
 
                 $product_id = wp_insert_post($new_product);
+
+                // Images properties
+                $regnum = intval($product['regNum']);
+                $url = "https://portal.facecounter.eu/pwc_api/api/v1/Stocks/Imports/Image/$regnum";
+                $headers = array(
+                    'APIKey: 1B63ED8F-A419-441D-B468-01112A917CD3'
+                );
+
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+                $response = curl_exec($ch);
+                curl_close($ch);
+
+                // Save the image data to a file
+                $filename = 'image_'.$product['regNum'].'.jpg';
+                $file_path = WP_CONTENT_DIR . '/uploads/' . $filename; // Replace with the desired file path
+                $file = fopen($file_path, 'w');
+                fwrite($file, $response);
+                fclose($file);
+                if (!get_post_thumbnail_id($product_id)) {
+                    // Attach the image to the product
+                    $attachment_id = wp_insert_attachment(array(
+                        'post_title' => $filename,
+                        'post_content' => '',
+                        'post_status' => 'inherit',
+                        'post_mime_type' => 'image/jpeg' // Replace with the actual MIME type of the image
+                    ), $file_path);
+
+                    if (!is_wp_error($attachment_id)) {
+                        set_post_thumbnail($existing_product_id->id, $attachment_id);
+                    }
+                }
 
                 // All properties of Product
                 wp_set_object_terms($product_id, explode(',', $product['rangeOfGoods']), 'product_cat');
@@ -229,6 +310,41 @@ function import_products_page_callback()
                         'sale_price' => $product['priceWS'],
                     ));
 
+                    // Images properties
+                    $regnum = intval($product['regNum']);
+                    $url = "https://portal.facecounter.eu/pwc_api/api/v1/Stocks/Imports/Image/$regnum";
+                    $headers = array(
+                        'APIKey: 1B63ED8F-A419-441D-B468-01112A917CD3'
+                    );
+
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $url);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+                    $response = curl_exec($ch);
+                    curl_close($ch);
+
+                    // Save the image data to a file
+                    $filename = 'image_'.$product['regNum'].'.jpg';
+                    $file_path = WP_CONTENT_DIR . '/uploads/' . $filename; // Replace with the desired file path
+                    $file = fopen($file_path, 'w');
+                    fwrite($file, $response);
+                    fclose($file);
+                    if (!get_post_thumbnail_id($product_id)) {
+                        // Attach the image to the product
+                        $attachment_id = wp_insert_attachment(array(
+                            'post_title' => $filename,
+                            'post_content' => '',
+                            'post_status' => 'inherit',
+                            'post_mime_type' => 'image/jpeg' // Replace with the actual MIME type of the image
+                        ), $file_path);
+
+                        if (!is_wp_error($attachment_id)) {
+                            set_post_thumbnail($existing_product_id->id, $attachment_id);
+                        }
+                    }
+
 
                     // Update properties of product
                     wp_set_object_terms($product_id, explode(',', $product['rangeOfGoods']), 'product_cat');
@@ -269,6 +385,41 @@ function import_products_page_callback()
                     );
 
                     $product_id = wp_insert_post($new_product);
+
+                    // Images properties
+                    $regnum = intval($product['regNum']);
+                    $url = "https://portal.facecounter.eu/pwc_api/api/v1/Stocks/Imports/Image/$regnum";
+                    $headers = array(
+                        'APIKey: 1B63ED8F-A419-441D-B468-01112A917CD3'
+                    );
+
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $url);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+                    $response = curl_exec($ch);
+                    curl_close($ch);
+
+                    // Save the image data to a file
+                    $filename = 'image_'.$product['regNum'].'.jpg';
+                    $file_path = WP_CONTENT_DIR . '/uploads/' . $filename; // Replace with the desired file path
+                    $file = fopen($file_path, 'w');
+                    fwrite($file, $response);
+                    fclose($file);
+                    if (!get_post_thumbnail_id($product_id)) {
+                        // Attach the image to the product
+                        $attachment_id = wp_insert_attachment(array(
+                            'post_title' => $filename,
+                            'post_content' => '',
+                            'post_status' => 'inherit',
+                            'post_mime_type' => 'image/jpeg' // Replace with the actual MIME type of the image
+                        ), $file_path);
+
+                        if (!is_wp_error($attachment_id)) {
+                            set_post_thumbnail($existing_product_id->id, $attachment_id);
+                        }
+                    }
 
                     // All properties of Product
                     wp_set_object_terms($product_id, explode(',', $product['rangeOfGoods']), 'product_cat');
