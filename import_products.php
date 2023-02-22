@@ -85,8 +85,9 @@ function getElemsTrueOption($product_option_obj) {
             array_push($list, $key);
         }
     }
-    return implode(', ', $list);
+    return $list;
 }
+
 
 
 
@@ -138,8 +139,20 @@ function import_products_page_callback()
                 update_post_meta($product_id, 'Ročník', $product['vintage']);
                 update_post_meta($product_id, 'Apelace', $product['appeals']);
                 update_post_meta($product_id, 'Dekantace', $product['decantation']);
-                update_post_meta($product_id, 'Odrůda', getElemsTrueOption($product['variety']));
-                update_post_meta($product_id, 'Styl', getElemsTrueOption($product['style']));
+
+                $elems = getElemsTrueOption($product['variety']);
+                foreach ($elems as $key => $value){
+                    $meta_key = 'Odrůda_' . $key;
+                    update_post_meta($product_id, $meta_key, $value);
+                }
+
+                $elems = getElemsTrueOption($product['style']);
+                foreach ($elems as $key => $value){
+                    $meta_key = 'Styl_' . $key;
+                    update_post_meta($product_id, $meta_key, $value);
+                }
+
+
                 update_post_meta($product_id, 'Sklenička', $product['glass']);
                 update_post_meta($product_id, '_price', $product['priceWS']);
                 update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
@@ -169,8 +182,17 @@ function import_products_page_callback()
                 update_post_meta($product_id, 'Ročník', $product['vintage']);
                 update_post_meta($product_id, 'Apelace', $product['appeals']);
                 update_post_meta($product_id, 'Dekantace', $product['decantation']);
-                update_post_meta($product_id, 'Odrůda', getElemsTrueOption($product['variety']));
-                update_post_meta($product_id, 'Styl', getElemsTrueOption($product['style']));
+                $elems = getElemsTrueOption($product['variety']);
+                foreach ($elems as $key => $value){
+                    $meta_key = 'Odrůda_' . $key;
+                    update_post_meta($product_id, $meta_key, $value);
+                }
+
+                $elems = getElemsTrueOption($product['style']);
+                foreach ($elems as $key => $value){
+                    $meta_key = 'Styl_' . $key;
+                    update_post_meta($product_id, $meta_key, $value);
+                }
                 update_post_meta($product_id, 'Sklenička', $product['glass']);
                 update_post_meta($product_id, '_price', $product['priceWS']);
                 update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
@@ -219,8 +241,17 @@ function import_products_page_callback()
                     update_post_meta($product_id, 'Ročník', $product['vintage']);
                     update_post_meta($product_id, 'Apelace', $product['appeals']);
                     update_post_meta($product_id, 'Dekantace', $product['decantation']);
-                    update_post_meta($product_id, 'Odrůda', getElemsTrueOption($product['variety']));
-                    update_post_meta($product_id, 'Styl', getElemsTrueOption($product['style']));
+                    $elems = getElemsTrueOption($product['variety']);
+                    foreach ($elems as $key => $value){
+                        $meta_key = 'Odrůda_' . $key;
+                        update_post_meta($product_id, $meta_key, $value);
+                    }
+
+                    $elems = getElemsTrueOption($product['style']);
+                    foreach ($elems as $key => $value){
+                        $meta_key = 'Styl_' . $key;
+                        update_post_meta($product_id, $meta_key, $value);
+                    }
                     update_post_meta($product_id, 'Sklenička', $product['glass']);
                     update_post_meta($product_id, '_price', $product['priceWS']);
                     update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
@@ -250,8 +281,19 @@ function import_products_page_callback()
                     update_post_meta($product_id, 'Ročník', $product['vintage']);
                     update_post_meta($product_id, 'Apelace', $product['appeals']);
                     update_post_meta($product_id, 'Dekantace', $product['decantation']);
-                    update_post_meta($product_id, 'Odrůda', getElemsTrueOption($product['variety']));
-                    update_post_meta($product_id, 'Styl', getElemsTrueOption($product['style']));
+                    $elems = getElemsTrueOption($product['variety']);
+                    foreach ($elems as $key => $value){
+                        $meta_key = 'Odrůda_' . $key;
+                        update_post_meta($product_id, $meta_key, $value);
+                    }
+
+                    $elems = getElemsTrueOption($product['style']);
+                    foreach ($elems as $key => $value){
+                        $meta_key = 'Styl_' . $key;
+                        update_post_meta($product_id, $meta_key, $value);
+                    }
+
+
                     update_post_meta($product_id, 'Sklenička', $product['glass']);
                     update_post_meta($product_id, '_price', $product['priceWS']);
                     update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
