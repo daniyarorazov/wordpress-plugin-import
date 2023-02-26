@@ -23,7 +23,7 @@
 /*
 Plugin Name: Import Products (Wines)
 Description: A plugin for importing products into WooCommerce
-Version: 1.0
+Version: 1.2
 Author: Daniyar
 Text Domain: import-products-wines
 */
@@ -67,12 +67,14 @@ function add_import_products_page() {
 // Getting SKU of products from products list
 function get_product_by_sku( $sku ) {
     global $wpdb;
-    $product_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key='_sku' AND meta_value='%s' LIMIT 1", $sku ) );
-    if ( $product_id ) return new WC_Product( $product_id );
+    $product_id = $wpdb->get_var($wpdb->prepare("SELECT post_id FROM $wpdb->postmeta WHERE meta_key='_sku' AND meta_value='%s' LIMIT 1", $sku));
+    if ($product_id) {
+        $product = wc_get_product($product_id);
 
+        return $product;
+    }
     return null;
 }
-
 
 
 // Get elems with inside options in obj and create from obj to string like ("elem1, elem2, elem3")
@@ -115,13 +117,7 @@ function import_products_page_callback()
 
             $product_sku = $product['regNum'];
 
-            // Check if a product with this SKU already exists
-            // get_product_by_sku()
-            // Error with this 2 code line
-            // Method doesn't define my sku product
-            $existing_product_id = wc_get_product_id_by_sku('9990000025083');
-            echo $existing_product_id;
-            // end error
+            $existing_product_id = get_product_by_sku($product_sku);
 
             if ( $existing_product_id ) {
                 $product_id = $existing_product_id->id;
@@ -138,7 +134,7 @@ function import_products_page_callback()
                 $regnum = intval($product['regNum']);
                 $url = "https://portal.facecounter.eu/pwc_api/api/v1/Stocks/Imports/Image/$regnum";
                 $headers = array(
-                    'APIKey: api_Key'
+                    'APIKey: 1B63ED8F-A419-441D-B468-01112A917CD3'
                 );
 
                 $ch = curl_init();
@@ -248,7 +244,7 @@ function import_products_page_callback()
                     ), $file_path);
 
                     if (!is_wp_error($attachment_id)) {
-                        set_post_thumbnail($existing_product_id->id, $attachment_id);
+                        set_post_thumbnail($product_id, $attachment_id);
                     }
                 }
 
@@ -417,7 +413,7 @@ function import_products_page_callback()
                         ), $file_path);
 
                         if (!is_wp_error($attachment_id)) {
-                            set_post_thumbnail($existing_product_id->id, $attachment_id);
+                            set_post_thumbnail($product_id, $attachment_id);
                         }
                     }
 
