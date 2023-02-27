@@ -23,7 +23,7 @@
 /*
 Plugin Name: Import Products (Wines)
 Description: A plugin for importing products into WooCommerce
-Version: 1.2
+Version: 1.0
 Author: Daniyar
 Text Domain: import-products-wines
 */
@@ -36,17 +36,6 @@ if ( is_readable( $autoloader ) ) {
 }
 
 use Automattic\WooCommerce\Client;
-
-// Connect to REST API WOOCOMMERCE (Change this fields depends yours project)
-$woocommerce = new Client(
-    'https://wordpress',
-    'ck_a651750ebea3f32a4a141f4f361825ca67367578',
-    'cs_4cccaa22fd82f680aa67ec9d4d5e2cab7b491486',
-    [
-        'wp_api'  => true,
-        'version' => 'wc/v2',
-    ]
-);
 
 
 add_action( 'admin_menu', 'add_import_products_page' );
@@ -134,7 +123,7 @@ function import_products_page_callback()
                 $regnum = intval($product['regNum']);
                 $url = "https://portal.facecounter.eu/pwc_api/api/v1/Stocks/Imports/Image/$regnum";
                 $headers = array(
-                    'APIKey: 1B63ED8F-A419-441D-B468-01112A917CD3'
+                    'APIKey: YOUR_API_KEY'
                 );
 
                 $ch = curl_init();
@@ -217,7 +206,7 @@ function import_products_page_callback()
                 $regnum = intval($product['regNum']);
                 $url = "https://portal.facecounter.eu/pwc_api/api/v1/Stocks/Imports/Image/$regnum";
                 $headers = array(
-                    'APIKey: YOUR_API_KEY'
+                    'APIKey: 1B63ED8F-A419-441D-B468-01112A917CD3'
                 );
 
                 $ch = curl_init();
@@ -273,8 +262,15 @@ function import_products_page_callback()
                 update_post_meta($product_id, 'Sklenička', $product['glass']);
                 update_post_meta($product_id, '_price', $product['priceWS']);
                 update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
-                update_post_meta($product_id, '_regular_price', doubleval($product['retailPriceExclVAT']) * 1.21);
-                update_post_meta($product_id, '_sale_price', $product['eshopPriceVAT']);
+                if ($product['retailPriceExclVAT'] and $product['eshopPriceVAT'] < doubleval($product['retailPriceExclVAT']) * 1.21) {
+                    update_post_meta($product_id, '_regular_price', doubleval($product['retailPriceExclVAT']) * 1.21);
+                    update_post_meta($product_id, '_sale_price', $product['eshopPriceVAT']);
+                } else {
+                    update_post_meta($product_id, '_regular_price', doubleval($product['eshopPriceVAT']));
+                }
+
+
+
                 echo '<div class="alert alert-success" role="alert">Product imported successfully: '. $product['title'] .'</div>';
             }
         }
@@ -367,8 +363,12 @@ function import_products_page_callback()
                     update_post_meta($product_id, 'Sklenička', $product['glass']);
                     update_post_meta($product_id, '_price', $product['priceWS']);
                     update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
-                    update_post_meta($product_id, '_regular_price', doubleval($product['retailPriceExclVAT']) * 1.21);
-                    update_post_meta($product_id, '_sale_price', $product['eshopPriceVAT']);
+                    if ($product['retailPriceExclVAT'] and $product['eshopPriceVAT'] < doubleval($product['retailPriceExclVAT']) * 1.21) {
+                        update_post_meta($product_id, '_regular_price', doubleval($product['retailPriceExclVAT']) * 1.21);
+                        update_post_meta($product_id, '_sale_price', $product['eshopPriceVAT']);
+                    } else {
+                        update_post_meta($product_id, '_regular_price', doubleval($product['eshopPriceVAT']));
+                    }
 
                     echo '<div class="alert alert-success" role="alert">Updated info product: '.$product['title'].'</div>';
                 } else {
@@ -444,8 +444,12 @@ function import_products_page_callback()
                     update_post_meta($product_id, 'Sklenička', $product['glass']);
                     update_post_meta($product_id, '_price', $product['priceWS']);
                     update_post_meta($product_id, 'Počet lahví v kartonu', $product['bottlesInCarton']);
-                    update_post_meta($product_id, '_regular_price', doubleval($product['retailPriceExclVAT']) * 1.21);
-                    update_post_meta($product_id, '_sale_price', $product['eshopPriceVAT']);
+                    if ($product['retailPriceExclVAT'] and $product['eshopPriceVAT'] < doubleval($product['retailPriceExclVAT']) * 1.21) {
+                        update_post_meta($product_id, '_regular_price', doubleval($product['retailPriceExclVAT']) * 1.21);
+                        update_post_meta($product_id, '_sale_price', $product['eshopPriceVAT']);
+                    } else {
+                        update_post_meta($product_id, '_regular_price', doubleval($product['eshopPriceVAT']));
+                    }
                     echo '<div class="alert alert-success" role="alert">Product imported successfully: '. $product['title'] .'</div>';
                 }
             }
