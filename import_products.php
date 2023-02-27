@@ -217,7 +217,7 @@ function import_products_page_callback()
                 $regnum = intval($product['regNum']);
                 $url = "https://portal.facecounter.eu/pwc_api/api/v1/Stocks/Imports/Image/$regnum";
                 $headers = array(
-                    'APIKey: 1B63ED8F-A419-441D-B468-01112A917CD3'
+                    'APIKey: YOUR_API_KEY'
                 );
 
                 $ch = curl_init();
